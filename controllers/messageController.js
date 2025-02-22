@@ -1,113 +1,99 @@
 const messageModel = require("../models/Message");
+const formatMessage = require("../utils/gemini");
 
 const scheduleMessage = async (req, res) => {
   try {
-    const { content, recipient, sendAt } = req.body;
+    const { message } = req.body;
 
-    if (!content || !recipient || !sendAt) {
-      return res.status(400).json({ message: "All fields are required" });
+    const processedMessage = await formatMessage(message);
+
+    if (!processedMessage.recipient) {
+      processedMessage.recipient = "default@recipient.com";
     }
 
-    const sendAtUtc = new Date(sendAt).toISOString();
-
-    if (isNaN(new Date(sendAtUtc).getTime())) {
-      return res.status(400).json({
-        message: "Invalid date format. Use 'YYYY-MM-DD HH:mm'",
-      });
-    }
-
-    const message = new messageModel({
-      content,
-      recipient,
-      sendAt: sendAtUtc,
-    });
-
-    await message.save();
-
-    return res
-      .status(201)
-      .json({ message: "Message scheduled successfully", data: message });
-  } catch (error) {
-    res.status(500).json({ message: "Server Error", error: error.message });
-  }
-};
-
-const getScheduledMessage = async (req, res) => {
-  try {
-    const messages = await messageModel
-      .find({ sendAt: { $gte: new Date() } })
-      .sort("sendAt");
-
-    const formattedMessages = messages.map((msg) => ({
-      ...msg._doc,
-      sendAt: new Date(msg.sendAt).toLocaleString(),
-    }));
-
-    return res.status(200).json({ messages: formattedMessages });
-  } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-const cancelSchedule = async (req, res) => {
-  try {
-    const message = await messageModel.findByIdAndDelete(req.params.id);
-    if (!message) {
-      return res.status(404).json({ error: "Message not found" });
-    }
-
-    return res.status(200).json({ message: "Message canceled successfully" });
-  } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
-
-const rescheduleMessage = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { newSendAt, newContent } = req.body;
-
-    if (!newSendAt) {
-      return res.status(400).json({ message: "New send time is required" });
-    }
-
-    const message = await messageModel.findById(id);
-
-    if (!message) {
-      return res.status(404).json({ message: "Message not found" });
-    }
-
-    if (message.sent) {
+    if (!processedMessage.content) {
+      console.error("Error: Missing content");
       return res
         .status(400)
-        .json({ message: "Cannot reschedule a sent message" });
+        .json({ message: "Invalid scheduling request: Missing content" });
     }
 
-    const updatedSentAt = new Date(newSendAt).toISOString();
+    if (!processedMessage.sendAt) {
+      console.error("Error: Missing sendAt field");
+      return res
+        .status(400)
+        .json({ message: "Invalid scheduling request: Missing sendAt" });
+    }
 
-    if (isNaN(new Date(updatedSentAt).getTime())) {
+    const scheduledDate = new Date(processedMessage.sendAt);
+
+    if (isNaN(scheduledDate.getTime())) {
+      console.error("Error: Invalid date format ->", processedMessage.sendAt);
       return res.status(400).json({ message: "Invalid date format" });
     }
 
-    message.sendAt = updatedSentAt;
+    const newMessage = new messageModel({
+      content: processedMessage.content,
+      recipient: processedMessage.recipient,
+      sendAt: scheduledDate.toISOString(),
+    });
 
-    if(newContent) {
-      message.content = newContent;
-    }
-    
-    await message.save();
+    await newMessage.save();
 
-    return res
-      .status(200)
-      .json({ message: "Message rescheduled successfully", data: message });
+    return res.status(201).json({
+      message: "Message scheduled successfully",
+      confirmationMessage: processedMessage.confirmationMessage,
+      data: newMessage,
+    });
   } catch (error) {
+    console.error("Server Error:", error);
     res.status(500).json({ message: "Server Error", error: error.message });
   }
+};
+
+const integrationConfig = async (req, res) => {
+  const integrationData = {
+    data: {
+      date: {
+        created_at: "2025-02-22",
+        updated_at: "2025-02-22",
+      },
+      descriptions: {
+        app_description: "Schedule messages to be sent at a later time",
+        app_logo: "https://i.ibb.co/0V1h40vP/image1-0.jpg",
+        app_name: "Message Scheduler",
+        app_url: "https://hng-3.onrender.com",
+        background_color: "#fff",
+      },
+      integration_category: "Communication & Collaboration",
+      integration_type: "modifier",
+      is_active: true,
+      key_features: [
+        "Task reminders which is helpful for internal team communication",
+        "Time-Sensitive communication between users to ensure that messages are delivered at the best time",
+      ],
+      permissions: {
+        monitoring_user: {
+          always_online: true,
+          display_name: "Message Scheduler",
+        },
+      },
+      settings: [
+        {
+          label: "Scheduled message",
+          type: "text",
+          required: true,
+          default: "",
+        },
+      ],
+      target_url: "https://hng-3.onrender.com/api/v1/message",
+    },
+  };
+
+  res.json(integrationData);
 };
 
 module.exports = {
   scheduleMessage,
-  getScheduledMessage,
-  cancelSchedule,
-  rescheduleMessage,
+  integrationConfig,
 };
