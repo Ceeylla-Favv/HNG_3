@@ -44,7 +44,7 @@ const scheduleMessage = async (req, res) => {
 
     return res.status(200).json({
       message: processedMessage.confirmationMessage,
-      status: success
+      status: "success"
     });
   } catch (error) {
     console.error("Server Error:", error);
