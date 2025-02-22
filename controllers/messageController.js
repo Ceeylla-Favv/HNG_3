@@ -52,7 +52,6 @@ const scheduleMessage = async (req, res) => {
       minute: "2-digit",
     });
 
-    // 🛠 Save message to database
     const newMessage = new messageModel({
       content: processedMessage.content,
       recipient: processedMessage.recipient,
