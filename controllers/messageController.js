@@ -50,7 +50,6 @@ const scheduleMessage = async (req, res) => {
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-      timeZoneName: "short",
     });
 
     // 🛠 Save message to database
