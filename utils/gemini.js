@@ -26,7 +26,9 @@ If the message is about scheduling, return this JSON format:
 4. If no date is given, assume it is **today** at the mentioned time.
 5. **If the time is already in the past, schedule it for tomorrow.**
 6. If no time is given, schedule it for **the next hour**.
-7. **If no recipient is found, use 'default@recipient.com'.**
+7. Convert **sendAt** to **a human-readable confirmation message**.
+8. **If no recipient is found, use 'default@recipient.com'.**
+
 
 **Examples:**  
 ✅ "Remind Sarah at 3 PM to complete the project." → {"recipient": "sarah@example.com"}  
@@ -85,7 +87,7 @@ Also, generate a confirmation message:
         content: parsedResponse.content,
         recipient: parsedResponse.recipient,
         sendAt: parsedResponse.sendAt,
-        confirmationMessage: `Your message ('${parsedResponse.content}') has been scheduled for ${parsedResponse.sendAt}.`,
+        confirmationMessage: `Your message ('${parsedResponse.content}') to ('${parsedResponse.recipient}') has been scheduled for ${parsedResponse.sendAt}.`,
       };
     }
 

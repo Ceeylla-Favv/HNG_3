@@ -27,13 +27,33 @@ const scheduleMessage = async (req, res) => {
         .json({ message: "Invalid scheduling request: Missing sendAt" });
     }
 
-    const scheduledDate = new Date(processedMessage.sendAt);
+    let scheduledDate = new Date(processedMessage.sendAt);
 
     if (isNaN(scheduledDate.getTime())) {
       console.error("Error: Invalid date format ->", processedMessage.sendAt);
       return res.status(400).json({ message: "Invalid date format" });
     }
 
+    
+    const now = new Date();
+    if (scheduledDate < now) {
+      console.warn(
+        "⚠️ Scheduled time is in the past. Adjusting to the next available time."
+      );
+      scheduledDate.setDate(scheduledDate.getDate() + 1);
+    }
+
+    const humanReadableTime = scheduledDate.toLocaleString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZoneName: "short",
+    });
+
+    // 🛠 Save message to database
     const newMessage = new messageModel({
       content: processedMessage.content,
       recipient: processedMessage.recipient,
@@ -42,9 +62,9 @@ const scheduleMessage = async (req, res) => {
 
     await newMessage.save();
 
-    return res.status(200).json({
-      message: processedMessage.confirmationMessage,
-      status: "success"
+    res.status(200).json({
+      message: `Your message ('${processedMessage.content}') to ('${processedMessage.recipient}') has been scheduled for ${humanReadableTime}.`,
+      status: "success",
     });
   } catch (error) {
     console.error("Server Error:", error);
