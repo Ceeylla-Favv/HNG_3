@@ -27,7 +27,7 @@ const scheduleMessage = async (req, res) => {
         .json({ message: "Invalid scheduling request: Missing sendAt" });
     }
 
-    let scheduledDate = new Date(processedMessage.sendAt);
+    let scheduledDate = new Date(processedMessage.sendAt + " UTC");
 
     if (isNaN(scheduledDate.getTime())) {
       console.error("Error: Invalid date format ->", processedMessage.sendAt);
@@ -36,6 +36,7 @@ const scheduleMessage = async (req, res) => {
 
     
     const now = new Date();
+
     if (scheduledDate < now) {
       console.warn(
         "⚠️ Scheduled time is in the past. Adjusting to the next available time."
@@ -55,7 +56,7 @@ const scheduleMessage = async (req, res) => {
     const newMessage = new messageModel({
       content: processedMessage.content,
       recipient: processedMessage.recipient,
-      sendAt: new Date(scheduledDate).toISOString(),
+      sendAt: new Date(processedMessage.sendAt + " UTC").toISOString(),
       sent: false,
     });
 

@@ -8,8 +8,10 @@ const scheduleMessage = () => {
             console.log("Checking for messages to send...");
 
             const now = new Date();
+            const nowUTC = new Date(now.toISOString());
+
             const messages = await messageModel.find({
-                sendAt: { $lte: now},
+                sendAt: { $lte: nowUTC},
                 sent: false,
             });
 

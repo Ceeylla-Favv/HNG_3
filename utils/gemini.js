@@ -16,7 +16,7 @@ If the message is about scheduling, return this JSON format:
 {
   "content": "The actual message to be sent",
   "recipient": "A valid email (if missing, infer from message or use 'default@recipient.com')",
-  "sendAt": "A valid future UTC date-time in YYYY-MM-DD HH:mm:ss format"
+  "sendAt": "A valid future UTC date-time in YYYY-MM-DD HH:mm:ss UTC"
 }
 
 **Rules:**
