@@ -55,7 +55,8 @@ const scheduleMessage = async (req, res) => {
     const newMessage = new messageModel({
       content: processedMessage.content,
       recipient: processedMessage.recipient,
-      sendAt: scheduledDate.toISOString(),
+      sendAt: new Date(scheduledDate).toISOString(),
+      sent: false,
     });
 
     await newMessage.save();
