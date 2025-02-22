@@ -3,6 +3,6 @@ const { scheduleMessage, integrationConfig } = require('../controllers/messageCo
 const router = express.Router();
 
 router.route("/schedule").post(scheduleMessage);
-router.route("/integration.json").get(integrationConfig);
+router.route("/integration").get(integrationConfig);
 
 module.exports = router;

@@ -1,6 +1,8 @@
 const messageModel = require("../models/Message");
 const formatMessage = require("../utils/gemini");
 
+const url = "https://hng-3.onrender.com";
+
 const scheduleMessage = async (req, res) => {
   try {
     const { message } = req.body;
@@ -62,7 +64,7 @@ const integrationConfig = async (req, res) => {
         app_description: "Schedule messages to be sent at a later time",
         app_logo: "https://i.ibb.co/0V1h40vP/image1-0.jpg",
         app_name: "Message Scheduler",
-        app_url: "https://hng-3.onrender.com",
+        app_url: url,
         background_color: "#fff",
       },
       integration_category: "Communication & Collaboration",
@@ -86,7 +88,7 @@ const integrationConfig = async (req, res) => {
           default: "",
         },
       ],
-      target_url: "https://hng-3.onrender.com/api/v1/message",
+      target_url: `${url}/schedule`,
     },
   };
 

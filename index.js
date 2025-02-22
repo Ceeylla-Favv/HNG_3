@@ -20,7 +20,7 @@ app.use(cors({
 
 
 
-app.use("/api/v1", router);
+app.use("/", router);
 
 app.get('/', (req, res) => {
     res.status(200).json({ info: "API is working"})
